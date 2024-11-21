@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to bottom, #f4e2d8, #c2a47e);
+            color: #4a3f35;
+        }
+        h1 {
+            text-align: center;
+            padding: 20px;
+            color: #6b4f3a;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        /* Board Styles */
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            gap: 10px;
+            background-color: #d9c3a2;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        .cell {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f7eddc;
+            font-size: 2rem;
+            font-weight: bold;
+            border: 2px solid #b79f7c;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .cell:hover {
+            background-color: #e4cbb1;
+        }
+        .cell.taken {
+            cursor: not-allowed;
+        }
+
+        /* Buttons */
+        .controls {
+            margin-top: 20px;
+        }
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            background-color: #6b4f3a;
+            color: #f7eddc;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        button:hover {
+            background-color: #4a3f35;
+            transform: scale(1.1);
+        }
+
+        /* Winner Display */
+        .winner {
+            margin-top: 20px;
+            font-size: 1.5rem;
+            color: #8a6038;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tic Tac Toe</h1>
+    <div class="container">
+        <div class="board" id="board"></div>
+        <div class="winner" id="winner"></div>
+        <div class="controls">
+            <button onclick="startGame('single')">Single Player</button>
+            <button onclick="startGame('multi')">Multiplayer</button>
+        </div>
+    </div>
+
+    <script>
+        const boardElement = document.getElementById('board');
+        const winnerElement = document.getElementById('winner');
+        let board, currentPlayer, isSinglePlayer;
+
+        // Initialize the game
+        function startGame(mode) {
+            isSinglePlayer = mode === 'single';
+            board = Array(9).fill('');
+            currentPlayer = 'X';
+            winnerElement.textContent = '';
+            renderBoard();
+        }
+
+        // Render the board
+        function renderBoard() {
+            boardElement.innerHTML = '';
+            board.forEach((cell, index) => {
+                const cellElement = document.createElement('div');
+                cellElement.className = `cell ${cell ? 'taken' : ''}`;
+                cellElement.textContent = cell;
+                cellElement.onclick = () => handleMove(index);
+                boardElement.appendChild(cellElement);
+            });
+        }
+
+        // Handle a player's move
+        function handleMove(index) {
+            if (board[index] || checkWinner()) return;
+
+            board[index] = currentPlayer;
+            if (checkWinner()) {
+                winnerElement.textContent = `${currentPlayer} Wins!`;
+                renderBoard();
+                return;
+            }
+
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            renderBoard();
+
+            if (isSinglePlayer && currentPlayer === 'O') {
+                setTimeout(aiMove, 500);
+            }
+        }
+
+        // AI move for single-player mode
+        function aiMove() {
+            const availableMoves = board.map((cell, index) => cell === '' ? index : null).filter(index => index !== null);
+            const randomMove = availableMoves[Math.floor(Math.random() * availableMoves.length)];
+            handleMove(randomMove);
+        }
+
+        // Check for a winner
+        function checkWinner() {
+            const winningCombinations = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+                [0, 4, 8], [2, 4, 6]             // Diagonals
+            ];
+
+            for (let combo of winningCombinations) {
+                const [a, b, c] = combo;
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    return true;
+                }
+            }
+
+            if (!board.includes('')) {
+                winnerElement.textContent = 'It\'s a Draw!';
+            }
+
+            return false;
+        }
+
+        // Start in single-player mode by default
+        startGame('single');
+    </script>
+</body>
+</html>
